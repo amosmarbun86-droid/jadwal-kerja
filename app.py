@@ -4,18 +4,48 @@ import calendar
 from datetime import datetime
 import matplotlib.pyplot as plt
 
-st.set_page_config(layout="wide")
+# =====================================================
+# CONFIG
+# =====================================================
+st.set_page_config(
+    page_title="Manajemen Shift Pro",
+    page_icon="📅",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
-# =============================
+# =====================================================
+# CUSTOM CSS (MODERN UI)
+# =====================================================
+st.markdown("""
+<style>
+.main-title {
+    font-size:30px;
+    font-weight:700;
+    color:#1f77b4;
+}
+.metric-box {
+    padding:15px;
+    border-radius:15px;
+    background-color:#f8f9fa;
+    box-shadow:0 4px 8px rgba(0,0,0,0.05);
+}
+</style>
+""", unsafe_allow_html=True)
+
+st.markdown('<div class="main-title">🏢 SISTEM MANAJEMEN SHIFT - PRO</div>', unsafe_allow_html=True)
+st.markdown("---")
+
+# =====================================================
 # LOGIN SYSTEM
-# =============================
-st.title("🏢 SISTEM MANAJEMEN SHIFT - PRO")
-
+# =====================================================
 if "login" not in st.session_state:
     st.session_state.login = False
     st.session_state.role = None
 
 if not st.session_state.login:
+    st.subheader("🔐 Login Sistem")
+
     username = st.text_input("Username")
     password = st.text_input("Password", type="password")
 
@@ -23,37 +53,47 @@ if not st.session_state.login:
         if username == "admin" and password == "admin123":
             st.session_state.login = True
             st.session_state.role = "Admin"
+            st.rerun()
         elif username == "user" and password == "user123":
             st.session_state.login = True
             st.session_state.role = "User"
+            st.rerun()
         else:
-            st.error("Login salah")
+            st.error("Username atau Password salah")
 
     st.stop()
 
-st.success(f"Login sebagai {st.session_state.role}")
+# =====================================================
+# SIDEBAR
+# =====================================================
+with st.sidebar:
+    st.header("⚙ Pengaturan")
 
-# =============================
+    bulan = st.selectbox("Pilih Bulan", list(range(1, 13)), index=1)
+    tahun = st.number_input("Tahun", 2024, 2035, 2026)
+
+    st.markdown("---")
+    st.success(f"Login sebagai {st.session_state.role}")
+
+    if st.button("Logout"):
+        st.session_state.login = False
+        st.rerun()
+
+# =====================================================
 # LOAD DATA
-# =============================
+# =====================================================
 df = pd.read_csv("Jadwal_Februari_2026_Rapih.csv")
 df.columns = df.columns.str.upper()
 
-# =============================
-# PILIH BULAN & TAHUN
-# =============================
-bulan = st.selectbox("Pilih Bulan", list(range(1, 13)), index=1)
-tahun = st.number_input("Tahun", 2024, 2035, 2026)
-
 jumlah_hari = calendar.monthrange(int(tahun), bulan)[1]
 
-# =============================
+# =====================================================
 # POLA SHIFT
-# =============================
+# =====================================================
 default_pola = [
     "OFF","3","3","3",
     "OFF","2","2","2",
-    "OFF","1","1","1",
+    "OFF","1","1","1"
 ]
 
 if st.session_state.role == "Admin":
@@ -65,9 +105,9 @@ if st.session_state.role == "Admin":
 else:
     pola = default_pola
 
-# =============================
-# OFFSET DARI FEB 2026
-# =============================
+# =====================================================
+# OFFSET ROTASI DARI FEB 2026
+# =====================================================
 bulan_dasar = 2
 tahun_dasar = 2026
 total_offset = 0
@@ -84,9 +124,9 @@ elif tahun > tahun_dasar:
     for b in range(1, bulan):
         total_offset += calendar.monthrange(tahun, b)[1]
 
-# =============================
-# GENERATE JADWAL
-# =============================
+# =====================================================
+# GENERATE JADWAL BARU
+# =====================================================
 data_baru = []
 
 for _, row in df.iterrows():
@@ -104,21 +144,23 @@ for _, row in df.iterrows():
 
 df_baru = pd.DataFrame(data_baru)
 
-# =============================
-# HIGHLIGHT OFF
-# =============================
+# =====================================================
+# HIGHLIGHT SHIFT
+# =====================================================
 def highlight(val):
-    if val == "OFF":
-        return "background-color:red;color:white;"
+    if val == "1":
+        return "background-color:#d4edda"
+    elif val == "2":
+        return "background-color:#fff3cd"
+    elif val == "3":
+        return "background-color:#cce5ff"
+    elif val == "OFF":
+        return "background-color:#dc3545;color:white;"
     return ""
 
-st.dataframe(df_baru.style.applymap(highlight), use_container_width=True)
-
-# =============================
-# STATISTIK
-# =============================
-st.subheader("📊 Statistik Shift Bulan Ini")
-
+# =====================================================
+# DASHBOARD METRIC
+# =====================================================
 shift_counts = {"1":0,"2":0,"3":0,"OFF":0}
 
 for col in df_baru.columns[3:]:
@@ -126,37 +168,74 @@ for col in df_baru.columns[3:]:
     for key in shift_counts:
         shift_counts[key] += counts.get(key,0)
 
-fig = plt.figure()
-plt.bar(shift_counts.keys(), shift_counts.values())
-plt.title("Total Shift")
-plt.xlabel("Jenis Shift")
-plt.ylabel("Jumlah")
-st.pyplot(fig)
+st.subheader("📊 Dashboard Statistik")
 
-# =============================
-# TOTAL HARI KERJA PER ORANG
-# =============================
+col1, col2, col3, col4 = st.columns(4)
+
+col1.metric("Shift 1", shift_counts["1"])
+col2.metric("Shift 2", shift_counts["2"])
+col3.metric("Shift 3", shift_counts["3"])
+col4.metric("OFF", shift_counts["OFF"])
+
+# =====================================================
+# TABEL JADWAL
+# =====================================================
+st.subheader("📅 Jadwal Shift")
+
+st.dataframe(
+    df_baru.style.applymap(highlight),
+    use_container_width=True
+)
+
+# =====================================================
+# GRAFIK
+# =====================================================
+st.subheader("📈 Grafik Distribusi Shift")
+
+chart_data = pd.DataFrame({
+    "Shift": shift_counts.keys(),
+    "Jumlah": shift_counts.values()
+}).set_index("Shift")
+
+st.bar_chart(chart_data)
+
+# =====================================================
+# TOTAL KERJA PER ORANG
+# =====================================================
 st.subheader("📋 Total Hari Kerja per Karyawan")
 
 rekap = []
 
 for _, row in df_baru.iterrows():
-    kerja = 0
-    for col in df_baru.columns[3:]:
-        if row[col] != "OFF":
-            kerja += 1
+    kerja = sum(1 for col in df_baru.columns[3:] if row[col] != "OFF")
     rekap.append({"NAMA": row["NAMA"], "TOTAL KERJA": kerja})
 
 df_rekap = pd.DataFrame(rekap)
+
 st.dataframe(df_rekap, use_container_width=True)
 
-# =============================
-# DOWNLOAD
-# =============================
+# =====================================================
+# NOTIFIKASI SHIFT BESOK
+# =====================================================
+today = datetime.today().day
+
+if today < jumlah_hari:
+    besok = str(today + 1)
+
+    st.subheader("🔔 Shift Besok")
+
+    notif = df_baru[["NAMA", besok]]
+    notif.columns = ["NAMA", "SHIFT BESOK"]
+
+    st.dataframe(notif, use_container_width=True)
+
+# =====================================================
+# DOWNLOAD CSV
+# =====================================================
 csv = df_baru.to_csv(index=False).encode("utf-8")
 
 st.download_button(
-    "⬇ Download CSV",
+    "⬇ Download Jadwal CSV",
     csv,
     f"Jadwal_{bulan}_{tahun}.csv",
     "text/csv"
