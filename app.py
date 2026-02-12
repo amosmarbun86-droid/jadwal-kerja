@@ -1,102 +1,71 @@
 import streamlit as st
 import pandas as pd
 import calendar
-from datetime import datetime
-from io import StringIO
 
-st.set_page_config(page_title="Jadwal Kerja Otomatis", layout="centered")
-
+st.set_page_config(layout="wide")
 st.title("📅 APLIKASI JADWAL KERJA")
 
-# =============================
+# ========================
 # PILIH BULAN & TAHUN
-# =============================
-
-col1, col2 = st.columns(2)
-
-with col1:
-    bulan = st.selectbox(
-        "Pilih Bulan",
-        list(range(1, 13)),
-        index=datetime.now().month - 1
-    )
-
-with col2:
-    tahun = st.number_input("Tahun", value=2026)
-
-jumlah_hari = calendar.monthrange(int(tahun), int(bulan))[1]
+# ========================
+bulan = st.selectbox("Pilih Bulan", list(range(1,13)), index=1)
+tahun = st.number_input("Tahun", value=2026)
 
 st.subheader(f"Jadwal Bulan {bulan} Tahun {tahun}")
 
-# =============================
-# LOAD NAMA DARI CSV
-# =============================
+# ========================
+# LOAD FILE ASLI
+# ========================
+df = pd.read_csv("Jadwal_Februari_2026_Rapih.csv")
 
-base_df = pd.read_csv("Jadwal_Februari_2026_Rapih.csv")
+df.columns = df.columns.astype(str)
 
-# Ubah semua header jadi huruf besar
-base_df.columns = base_df.columns.str.upper().str.strip()
+# Ambil kolom tetap
+kolom_tetap = ["NO","NAMA","TITLE"]
 
-nama_list = base_df.iloc[:, 1]   # kolom kedua (Nama)
-title_list = base_df.iloc[:, 2]  # kolom ketiga (Title)
+# Ambil kolom tanggal dari file asli
+kolom_tanggal = [col for col in df.columns if col not in kolom_tetap]
 
-# =============================
-# POLA SHIFT 3-3-3-OFF
-# =============================
+# Hitung jumlah hari bulan dipilih
+jumlah_hari = calendar.monthrange(int(tahun), int(bulan))[1]
 
-pola = [
-    "OFF", "3", "3", "3",
-    "OFF", "2", "2", "2",
-    "OFF", "1", "1", "1"
-]
+# ========================
+# BUAT DATA BARU IKUT POLA ASLI
+# ========================
+data_baru = []
 
-data = []
-
-for idx in range(len(nama_list)):
-    row = {
-        "NO": idx + 1,
-        "NAMA": nama_list.iloc[idx],
-        "TITLE": title_list.iloc[idx]
+for index, row in df.iterrows():
+    
+    pola_asli = row[kolom_tanggal].tolist()
+    
+    row_baru = {
+        "NO": row["NO"],
+        "NAMA": row["NAMA"],
+        "TITLE": row["TITLE"]
     }
+    
+    for h in range(jumlah_hari):
+        row_baru[str(h+1)] = pola_asli[h % len(pola_asli)]
+    
+    data_baru.append(row_baru)
 
-    for i in range(jumlah_hari):
-        shift = pola[(i + idx) % len(pola)]
-        row[str(i + 1)] = shift
+df_final = pd.DataFrame(data_baru)
 
-    data.append(row)
-
-df = pd.DataFrame(data)
-
-# =============================
+# ========================
 # WARNA SHIFT
-# =============================
-
-def warna_shift(val):
-    if str(val) == "OFF":
+# ========================
+def highlight(val):
+    if val == "OFF":
         return "background-color: red; color: white"
-    elif str(val) == "1":
-        return "background-color: #90EE90"
-    elif str(val) == "2":
-        return "background-color: #FFFF99"
-    elif str(val) == "3":
-        return "background-color: #ADD8E6"
+    elif val == 3 or val == "3":
+        return "background-color: #9ecae1"
+    elif val == 2 or val == "2":
+        return "background-color: #ffff99"
+    elif val == 1 or val == "1":
+        return "background-color: #99ff99"
     return ""
 
-styled_df = df.style.applymap(warna_shift)
-
-st.dataframe(styled_df, use_container_width=True, height=500)
-
-# =============================
-# DOWNLOAD CSV
-# =============================
-
-csv_buffer = StringIO()
-df.to_csv(csv_buffer, index=False)
-
-st.download_button(
-    label="📥 Download CSV",
-    data=csv_buffer.getvalue(),
-    file_name=f"Jadwal_{bulan}_{tahun}.csv",
-    mime="text/csv",
+st.dataframe(
+    df_final.style.applymap(highlight),
     use_container_width=True
 )
