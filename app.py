@@ -1,18 +1,73 @@
 import streamlit as st
 import pandas as pd
+import calendar
+from datetime import datetime
 from io import StringIO
 
-st.set_page_config(page_title="Jadwal Kerja", layout="centered")
+st.set_page_config(page_title="Jadwal Kerja Otomatis", layout="centered")
 
-st.title("📅 JADWAL KERJA FEBRUARI 2026")
+st.title("📅 APLIKASI JADWAL KERJA")
 
-# Load CSV
-df = pd.read_csv("Jadwal_Februari_2026_Rapih.csv")
+# =============================
+# PILIH BULAN & TAHUN
+# =============================
 
-# Tambah kolom NO
-df.insert(0, "NO", range(1, len(df) + 1))
+col1, col2 = st.columns(2)
 
-# Warna shift
+with col1:
+    bulan = st.selectbox(
+        "Pilih Bulan",
+        list(range(1, 13)),
+        index=datetime.now().month - 1
+    )
+
+with col2:
+    tahun = st.number_input("Tahun", value=2026)
+
+jumlah_hari = calendar.monthrange(int(tahun), int(bulan))[1]
+
+st.subheader(f"Jadwal Bulan {bulan} Tahun {tahun}")
+
+# =============================
+# LOAD NAMA DARI CSV
+# =============================
+
+base_df = pd.read_csv("Jadwal_Februari_2026_Rapih.csv")
+
+nama_list = base_df["NAMA"]
+title_list = base_df["TITLE"]
+
+# =============================
+# POLA SHIFT 3-3-3-OFF
+# =============================
+
+pola = [
+    "OFF", "3", "3", "3",
+    "OFF", "2", "2", "2",
+    "OFF", "1", "1", "1"
+]
+
+data = []
+
+for idx in range(len(nama_list)):
+    row = {
+        "NO": idx + 1,
+        "NAMA": nama_list.iloc[idx],
+        "TITLE": title_list.iloc[idx]
+    }
+
+    for i in range(jumlah_hari):
+        shift = pola[(i + idx) % len(pola)]
+        row[str(i + 1)] = shift
+
+    data.append(row)
+
+df = pd.DataFrame(data)
+
+# =============================
+# WARNA SHIFT
+# =============================
+
 def warna_shift(val):
     if str(val) == "OFF":
         return "background-color: red; color: white"
@@ -28,14 +83,17 @@ styled_df = df.style.applymap(warna_shift)
 
 st.dataframe(styled_df, use_container_width=True, height=500)
 
-# Download ulang CSV
+# =============================
+# DOWNLOAD CSV
+# =============================
+
 csv_buffer = StringIO()
 df.to_csv(csv_buffer, index=False)
 
 st.download_button(
     label="📥 Download CSV",
     data=csv_buffer.getvalue(),
-    file_name="Jadwal_Februari_2026.csv",
+    file_name=f"Jadwal_{bulan}_{tahun}.csv",
     mime="text/csv",
     use_container_width=True
 )
