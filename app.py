@@ -8,29 +8,38 @@ st.title("📅 APLIKASI JADWAL KERJA")
 # =========================
 # PILIH BULAN & TAHUN
 # =========================
-bulan = st.selectbox("Pilih Bulan", list(range(1,13)), index=1)
+bulan = st.selectbox("Pilih Bulan", list(range(1, 13)), index=1)
 tahun = st.number_input("Tahun", value=2026)
 
 st.subheader(f"Jadwal Bulan {bulan} Tahun {tahun}")
 
 # =========================
-# LOAD CSV ANDA
+# LOAD FILE CSV ASLI
 # =========================
 df = pd.read_csv("Jadwal_Februari_2026_Rapih.csv")
-
-# Bersihkan header
 df.columns = df.columns.str.strip()
 
-# Kolom tetap sesuai file Anda
 nama_col = "Nama"
 jabatan_col = "Jabatan"
 
-# Kolom tanggal
+# Kolom tanggal dari file asli
 kolom_tanggal = [col for col in df.columns if col not in [nama_col, jabatan_col]]
 
-# Hitung jumlah hari bulan
+# =========================
+# HITUNG JUMLAH HARI BULAN DIPILIH
+# =========================
 jumlah_hari = calendar.monthrange(int(tahun), int(bulan))[1]
 
+# =========================
+# HITUNG TOTAL HARI SEBELUM BULAN INI (AGAR LANJUT)
+# =========================
+total_hari_sebelumnya = 0
+for b in range(1, bulan):
+    total_hari_sebelumnya += calendar.monthrange(int(tahun), b)[1]
+
+# =========================
+# BUAT JADWAL BARU
+# =========================
 data_baru = []
 
 for index, row in df.iterrows():
@@ -44,17 +53,18 @@ for index, row in df.iterrows():
     }
     
     for h in range(jumlah_hari):
-        row_baru[str(h+1)] = pola_asli[h % len(pola_asli)]
+        index_pola = (total_hari_sebelumnya + h) % len(pola_asli)
+        row_baru[str(h+1)] = pola_asli[index_pola]
     
     data_baru.append(row_baru)
 
 df_final = pd.DataFrame(data_baru)
 
 # =========================
-# WARNAKAN SHIFT
+# WARNA SHIFT
 # =========================
 def highlight(val):
-    if val == "OFF":
+    if str(val) == "OFF":
         return "background-color: red; color: white"
     elif str(val) == "3":
         return "background-color: #9ecae1"
