@@ -34,8 +34,11 @@ st.subheader(f"Jadwal Bulan {bulan} Tahun {tahun}")
 
 base_df = pd.read_csv("Jadwal_Februari_2026_Rapih.csv")
 
-nama_list = base_df["NAMA"]
-title_list = base_df["TITLE"]
+# Ubah semua header jadi huruf besar
+base_df.columns = base_df.columns.str.upper().str.strip()
+
+nama_list = base_df.iloc[:, 1]   # kolom kedua (Nama)
+title_list = base_df.iloc[:, 2]  # kolom ketiga (Title)
 
 # =============================
 # POLA SHIFT 3-3-3-OFF
