@@ -1,34 +1,63 @@
 import streamlit as st
 import pandas as pd
 import calendar
-from datetime import datetime, date
+from datetime import datetime
 import matplotlib.pyplot as plt
 import holidays
 
-st.set_page_config(layout="wide")
+st.set_page_config(
+    page_title="Manajemen Shift PRO",
+    page_icon="📅",
+    layout="wide"
+)
 
-# ==========================================
-# BACKGROUND GAMBAR
-# ==========================================
-def set_bg():
-    st.markdown(
-        """
-        <style>
-        .stApp {
-            background-image: url("background.png");
-            background-size: cover;
-            background-attachment: fixed;
-        }
-        </style>
-        """,
-        unsafe_allow_html=True
-    )
+# =====================================================
+# TEMA PRO OTOMATIS (NO FILE)
+# =====================================================
 
-set_bg()
+BG_IMAGE_URL = "https://images.unsplash.com/photo-1504384308090-c894fdcc538d"
 
-# ==========================================
-# LOGIN SYSTEM
-# ==========================================
+st.markdown(f"""
+<style>
+.stApp {{
+    background:
+    linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)),
+    url("{BG_IMAGE_URL}");
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+}}
+
+.block-container {{
+    background: rgba(255,255,255,0.08);
+    backdrop-filter: blur(14px);
+    border-radius: 18px;
+    padding: 25px;
+}}
+
+section[data-testid="stSidebar"] {{
+    background: rgba(0,0,0,0.65);
+}}
+
+h1, h2, h3, h4, h5, h6, p, label, span {{
+    color: white !important;
+}}
+
+.stButton>button {{
+    background: linear-gradient(135deg, #00c6ff, #0072ff);
+    color: white;
+    border-radius: 12px;
+    border: none;
+    padding: 10px 22px;
+    font-weight: bold;
+}}
+</style>
+""", unsafe_allow_html=True)
+
+# =====================================================
+# LOGIN SYSTEM (ASLI KAMU)
+# =====================================================
+
 st.title("🏢 SISTEM MANAJEMEN SHIFT - PRO")
 
 if "login" not in st.session_state:
@@ -53,33 +82,37 @@ if not st.session_state.login:
 
 st.success(f"Login sebagai {st.session_state.role}")
 
-# ==========================================
+# =====================================================
 # LOAD DATA
-# ==========================================
+# =====================================================
+
 df = pd.read_csv("Jadwal_Februari_2026_Rapih.csv")
 df.columns = df.columns.str.upper()
 
-# ==========================================
+# =====================================================
 # PILIH BULAN & TAHUN
-# ==========================================
+# =====================================================
+
 bulan = st.selectbox("Pilih Bulan", list(range(1, 13)), index=1)
 tahun = st.number_input("Tahun", 2024, 2035, 2026)
 
 jumlah_hari = calendar.monthrange(int(tahun), bulan)[1]
 
-# ==========================================
+# =====================================================
 # LIBUR NASIONAL INDONESIA 🇮🇩
-# ==========================================
+# =====================================================
+
 hari_libur = holidays.Indonesia(years=tahun)
+
 libur_bulan_ini = {}
+for tgl, nama in hari_libur.items():
+    if tgl.month == bulan:
+        libur_bulan_ini[tgl.day] = nama
 
-for tanggal, nama in hari_libur.items():
-    if tanggal.month == bulan:
-        libur_bulan_ini[tanggal.day] = nama
-
-# ==========================================
+# =====================================================
 # POLA SHIFT
-# ==========================================
+# =====================================================
+
 default_pola = [
     "OFF","3","3","3",
     "OFF","2","2","2",
@@ -95,9 +128,10 @@ if st.session_state.role == "Admin":
 else:
     pola = default_pola
 
-# ==========================================
+# =====================================================
 # OFFSET DARI FEB 2026
-# ==========================================
+# =====================================================
+
 bulan_dasar = 2
 tahun_dasar = 2026
 total_offset = 0
@@ -114,9 +148,10 @@ elif tahun > tahun_dasar:
     for b in range(1, bulan):
         total_offset += calendar.monthrange(tahun, b)[1]
 
-# ==========================================
-# GENERATE JADWAL
-# ==========================================
+# =====================================================
+# GENERATE JADWAL + BADGE LIBUR
+# =====================================================
+
 data_baru = []
 
 for _, row in df.iterrows():
@@ -127,23 +162,23 @@ for _, row in df.iterrows():
     }
 
     for i in range(jumlah_hari):
-        posisi = (total_offset + i) % len(pola)
         hari_ke = i + 1
-        shift = pola[posisi]
+        posisi = (total_offset + i) % len(pola)
+        shift_val = pola[posisi]
 
-        # Tambah tanda libur nasional 🇮🇩
         if hari_ke in libur_bulan_ini:
-            shift = f"{shift} 🇮🇩"
+            shift_val = f"{shift_val} 🇮🇩"
 
-        baris[str(hari_ke)] = shift
+        baris[str(hari_ke)] = shift_val
 
     data_baru.append(baris)
 
 df_baru = pd.DataFrame(data_baru)
 
-# ==========================================
+# =====================================================
 # HIGHLIGHT OFF + LIBUR
-# ==========================================
+# =====================================================
+
 def highlight(val):
     val = str(val)
 
@@ -155,11 +190,12 @@ def highlight(val):
 
 st.dataframe(df_baru.style.applymap(highlight), use_container_width=True)
 
-# ==========================================
+# =====================================================
 # PANEL LIBUR NASIONAL
-# ==========================================
+# =====================================================
+
 if libur_bulan_ini:
-    st.subheader("🇮🇩 Libur Nasional")
+    st.subheader("🇮🇩 Libur Nasional & Cuti Bersama")
 
     df_libur = pd.DataFrame([
         {"Tanggal": f"{hari}-{bulan}-{tahun}", "Keterangan": nama}
@@ -168,9 +204,10 @@ if libur_bulan_ini:
 
     st.dataframe(df_libur, use_container_width=True)
 
-# ==========================================
+# =====================================================
 # STATISTIK
-# ==========================================
+# =====================================================
+
 st.subheader("📊 Statistik Shift Bulan Ini")
 
 shift_counts = {"1":0,"2":0,"3":0,"OFF":0}
@@ -178,7 +215,9 @@ shift_counts = {"1":0,"2":0,"3":0,"OFF":0}
 for col in df_baru.columns[3:]:
     counts = df_baru[col].astype(str).value_counts()
     for key in shift_counts:
-        shift_counts[key] += sum(counts.get(k,0) for k in counts.index if key in k)
+        shift_counts[key] += sum(
+            counts.get(k,0) for k in counts.index if key in k
+        )
 
 fig = plt.figure()
 plt.bar(shift_counts.keys(), shift_counts.values())
@@ -187,9 +226,10 @@ plt.xlabel("Jenis Shift")
 plt.ylabel("Jumlah")
 st.pyplot(fig)
 
-# ==========================================
-# TOTAL HARI KERJA
-# ==========================================
+# =====================================================
+# TOTAL HARI KERJA PER ORANG
+# =====================================================
+
 st.subheader("📋 Total Hari Kerja per Karyawan")
 
 rekap = []
@@ -204,9 +244,10 @@ for _, row in df_baru.iterrows():
 df_rekap = pd.DataFrame(rekap)
 st.dataframe(df_rekap, use_container_width=True)
 
-# ==========================================
+# =====================================================
 # DOWNLOAD
-# ==========================================
+# =====================================================
+
 csv = df_baru.to_csv(index=False).encode("utf-8")
 
 st.download_button(
