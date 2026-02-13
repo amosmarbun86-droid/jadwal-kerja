@@ -1,12 +1,20 @@
 import streamlit as st
-# ===== PWA SUPPORT =====
+
+# ===== PWA SUPPORT FINAL =====
 st.markdown("""
-<link rel="manifest" href="manifest.json">
+<link rel="manifest" href="./manifest.json">
 <meta name="theme-color" content="#0f172a">
 
 <script>
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('service-worker.js');
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('./service-worker.js')
+      .then(function(reg) {
+        console.log("Service Worker registered", reg);
+      }).catch(function(err) {
+        console.log("Service Worker failed", err);
+      });
+  });
 }
 </script>
 """, unsafe_allow_html=True)
