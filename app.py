@@ -4,6 +4,7 @@ import calendar
 import matplotlib.pyplot as plt
 import holidays
 from datetime import datetime
+import os
 
 st.set_page_config(
     page_title="Shift App",
@@ -12,7 +13,7 @@ st.set_page_config(
 )
 
 # =====================================================
-# ANDROID STYLE (TETAP)
+# STYLE LAMA (ANDROID LOOK)
 # =====================================================
 
 BG = "https://images.unsplash.com/photo-1504384308090-c894fdcc538d"
@@ -53,7 +54,7 @@ header, footer {{visibility:hidden;}}
 <div class="appbar">📅 Sistem Manajemen Shift</div>
 """, unsafe_allow_html=True)
 
-st.title("🏢 SISTEM MANAJEMEN SHIFT - FINAL")
+st.title("🏢 SISTEM MANAJEMEN SHIFT")
 
 # =====================================================
 # LOGIN
@@ -81,31 +82,58 @@ if not st.session_state.login:
 st.success(f"Login sebagai {st.session_state.role}")
 
 # =====================================================
-# UPLOAD FILE OTOMATIS
+# AUTO LOAD FILE PERMANEN
 # =====================================================
 
+DATA_FOLDER = "data"
+MAIN_FILE = os.path.join(DATA_FOLDER, "jadwal_utama")
+
+os.makedirs(DATA_FOLDER, exist_ok=True)
+
 uploaded_file = st.file_uploader(
-    "Upload File Jadwal (Excel / CSV)",
+    "Upload File Jadwal (Excel / CSV) - Upload Sekali Saja",
     type=["xlsx", "csv"]
 )
 
-if uploaded_file is None:
-    st.warning("Silakan upload file terlebih dahulu")
+# Jika upload baru → overwrite file utama
+if uploaded_file is not None:
+    ext = uploaded_file.name.split(".")[-1]
+    MAIN_FILE_WITH_EXT = MAIN_FILE + "." + ext
+
+    # Hapus file lama
+    for f in os.listdir(DATA_FOLDER):
+        os.remove(os.path.join(DATA_FOLDER, f))
+
+    with open(MAIN_FILE_WITH_EXT, "wb") as f:
+        f.write(uploaded_file.getbuffer())
+
+    st.success("File tersimpan sebagai file utama")
+
+# Cari file utama otomatis
+files = os.listdir(DATA_FOLDER)
+
+if not files:
+    st.warning("Silakan upload file jadwal terlebih dahulu")
     st.stop()
 
-if uploaded_file.name.endswith(".xlsx"):
-    df = pd.read_excel(uploaded_file)
+file_path = os.path.join(DATA_FOLDER, files[0])
+
+# =====================================================
+# BACA FILE
+# =====================================================
+
+if file_path.endswith(".xlsx"):
+    df = pd.read_excel(file_path)
 else:
-    df = pd.read_csv(uploaded_file)
+    df = pd.read_csv(file_path)
 
 df.columns = df.columns.str.strip().str.upper()
 
-# Ambil 3 kolom pertama
 base_cols = df.iloc[:, :3]
 base_cols.columns = ["NO", "NAMA", "TITLE"]
 
 # =====================================================
-# PILIH BULAN OTOMATIS
+# BULAN OTOMATIS
 # =====================================================
 
 bulan_sekarang = datetime.now().month
@@ -176,18 +204,7 @@ for _, row in base_cols.iterrows():
 df_baru = pd.DataFrame(data_baru)
 
 # =====================================================
-# FILTER
-# =====================================================
-
-st.subheader("🔎 Filter Karyawan")
-
-nama_list = df_baru["NAMA"].unique().tolist()
-selected = st.multiselect("Pilih Karyawan", nama_list, default=nama_list)
-
-df_filtered = df_baru[df_baru["NAMA"].isin(selected)]
-
-# =====================================================
-# HIGHLIGHT
+# TAMPILKAN
 # =====================================================
 
 def highlight(val):
@@ -199,35 +216,15 @@ def highlight(val):
     return ""
 
 st.dataframe(
-    df_filtered.style.applymap(highlight),
+    df_baru.style.applymap(highlight),
     use_container_width=True
 )
-
-# =====================================================
-# STATISTIK
-# =====================================================
-
-st.subheader("📊 Statistik Shift")
-
-shift_counts = {"1":0,"2":0,"3":0,"OFF":0}
-
-for col in df_filtered.columns[3:]:
-    counts = df_filtered[col].astype(str).value_counts()
-    for key in shift_counts:
-        shift_counts[key] += sum(
-            counts.get(k,0) for k in counts.index if key in k
-        )
-
-fig = plt.figure(figsize=(6,4))
-plt.bar(shift_counts.keys(), shift_counts.values())
-plt.grid(axis="y", linestyle="--", alpha=0.5)
-st.pyplot(fig)
 
 # =====================================================
 # DOWNLOAD
 # =====================================================
 
-csv = df_filtered.to_csv(index=False).encode("utf-8")
+csv = df_baru.to_csv(index=False).encode("utf-8")
 
 st.download_button(
     "⬇ Download Jadwal CSV",
