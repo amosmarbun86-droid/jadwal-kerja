@@ -1,28 +1,9 @@
 import streamlit as st
-
-# ===== PWA SUPPORT FINAL =====
-st.markdown("""
-<link rel="manifest" href="./manifest.json">
-<meta name="theme-color" content="#0f172a">
-
-<script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', function() {
-    navigator.serviceWorker.register('./service-worker.js')
-      .then(function(reg) {
-        console.log("Service Worker registered", reg);
-      }).catch(function(err) {
-        console.log("Service Worker failed", err);
-      });
-  });
-}
-</script>
-""", unsafe_allow_html=True)
 import pandas as pd
 import calendar
-from datetime import datetime
 import matplotlib.pyplot as plt
 import holidays
+from datetime import datetime
 
 st.set_page_config(
     page_title="Shift App",
@@ -31,7 +12,7 @@ st.set_page_config(
 )
 
 # =====================================================
-# ANDROID APP STYLE
+# ANDROID STYLE (TETAP)
 # =====================================================
 
 BG = "https://images.unsplash.com/photo-1504384308090-c894fdcc538d"
@@ -67,77 +48,88 @@ header, footer {{visibility:hidden;}}
     padding-top:80px;
     padding-bottom:40px;
 }}
-
-.card {{
-    background: rgba(255,255,255,0.1);
-    backdrop-filter: blur(14px);
-    border-radius: 20px;
-    padding: 20px;
-    margin-bottom: 20px;
-    color:white;
-}}
 </style>
 
 <div class="appbar">📅 Sistem Manajemen Shift</div>
 """, unsafe_allow_html=True)
 
-# =====================================================
-# LOGIN SYSTEM (ASLI)
-# =====================================================
+st.title("🏢 SISTEM MANAJEMEN SHIFT - FINAL")
 
-st.title("🏢 SISTEM MANAJEMEN SHIFT - PRO")
+# =====================================================
+# LOGIN
+# =====================================================
 
 if "login" not in st.session_state:
     st.session_state.login = False
     st.session_state.role = None
 
 if not st.session_state.login:
-    username = st.text_input("Username")
-    password = st.text_input("Password", type="password")
+    user = st.text_input("Username")
+    pwd = st.text_input("Password", type="password")
 
     if st.button("Login"):
-        if username == "admin" and password == "admin123":
+        if user == "admin" and pwd == "admin123":
             st.session_state.login = True
             st.session_state.role = "Admin"
-        elif username == "user" and password == "user123":
+        elif user == "user" and pwd == "user123":
             st.session_state.login = True
             st.session_state.role = "User"
         else:
             st.error("Login salah")
-
     st.stop()
 
 st.success(f"Login sebagai {st.session_state.role}")
 
 # =====================================================
-# LOAD DATA (ASLI)
+# UPLOAD FILE OTOMATIS
 # =====================================================
 
-df = pd.read_csv("Jadwal_Februari_2026_Rapih.csv")
-df.columns = df.columns.str.upper()
+uploaded_file = st.file_uploader(
+    "Upload File Jadwal (Excel / CSV)",
+    type=["xlsx", "csv"]
+)
+
+if uploaded_file is None:
+    st.warning("Silakan upload file terlebih dahulu")
+    st.stop()
+
+if uploaded_file.name.endswith(".xlsx"):
+    df = pd.read_excel(uploaded_file)
+else:
+    df = pd.read_csv(uploaded_file)
+
+df.columns = df.columns.str.strip().str.upper()
+
+# Ambil 3 kolom pertama
+base_cols = df.iloc[:, :3]
+base_cols.columns = ["NO", "NAMA", "TITLE"]
 
 # =====================================================
-# PILIH BULAN & TAHUN
+# PILIH BULAN OTOMATIS
 # =====================================================
 
-bulan = st.selectbox("Pilih Bulan", list(range(1, 13)), index=1)
-tahun = st.number_input("Tahun", 2024, 2035, 2026)
+bulan_sekarang = datetime.now().month
+tahun_sekarang = datetime.now().year
+
+bulan = st.selectbox("Pilih Bulan", list(range(1, 13)), index=bulan_sekarang-1)
+tahun = st.number_input("Tahun", 2024, 2035, tahun_sekarang)
 
 jumlah_hari = calendar.monthrange(int(tahun), bulan)[1]
 
 # =====================================================
-# LIBUR NASIONAL 🇮🇩
+# LIBUR NASIONAL
 # =====================================================
 
 hari_libur = holidays.Indonesia(years=tahun)
 
-libur_bulan_ini = {}
-for tgl, nama in hari_libur.items():
-    if tgl.month == bulan:
-        libur_bulan_ini[tgl.day] = nama
+libur_bulan_ini = {
+    tgl.day: nama
+    for tgl, nama in hari_libur.items()
+    if tgl.month == bulan
+}
 
 # =====================================================
-# POLA SHIFT (ASLI)
+# POLA SHIFT
 # =====================================================
 
 default_pola = [
@@ -156,32 +148,13 @@ else:
     pola = default_pola
 
 # =====================================================
-# OFFSET DARI FEB 2026 (ASLI)
-# =====================================================
-
-bulan_dasar = 2
-tahun_dasar = 2026
-total_offset = 0
-
-if tahun == tahun_dasar and bulan >= bulan_dasar:
-    for b in range(bulan_dasar, bulan):
-        total_offset += calendar.monthrange(tahun, b)[1]
-elif tahun > tahun_dasar:
-    for b in range(bulan_dasar, 13):
-        total_offset += calendar.monthrange(tahun_dasar, b)[1]
-    for t in range(tahun_dasar + 1, tahun):
-        for b in range(1, 13):
-            total_offset += calendar.monthrange(t, b)[1]
-    for b in range(1, bulan):
-        total_offset += calendar.monthrange(tahun, b)[1]
-
-# =====================================================
-# GENERATE JADWAL + BADGE LIBUR
+# GENERATE JADWAL
 # =====================================================
 
 data_baru = []
 
-for _, row in df.iterrows():
+for _, row in base_cols.iterrows():
+
     baris = {
         "NO": row["NO"],
         "NAMA": row["NAMA"],
@@ -190,7 +163,7 @@ for _, row in df.iterrows():
 
     for i in range(jumlah_hari):
         hari_ke = i + 1
-        posisi = (total_offset + i) % len(pola)
+        posisi = i % len(pola)
         shift_val = pola[posisi]
 
         if hari_ke in libur_bulan_ini:
@@ -203,83 +176,62 @@ for _, row in df.iterrows():
 df_baru = pd.DataFrame(data_baru)
 
 # =====================================================
-# HIGHLIGHT OFF + LIBUR
+# FILTER
+# =====================================================
+
+st.subheader("🔎 Filter Karyawan")
+
+nama_list = df_baru["NAMA"].unique().tolist()
+selected = st.multiselect("Pilih Karyawan", nama_list, default=nama_list)
+
+df_filtered = df_baru[df_baru["NAMA"].isin(selected)]
+
+# =====================================================
+# HIGHLIGHT
 # =====================================================
 
 def highlight(val):
     val = str(val)
-
     if "🇮🇩" in val:
         return "background-color:#b30000;color:white;font-weight:bold;"
     if val == "OFF":
         return "background-color:red;color:white;"
     return ""
 
-st.dataframe(df_baru.style.applymap(highlight), use_container_width=True)
+st.dataframe(
+    df_filtered.style.applymap(highlight),
+    use_container_width=True
+)
 
 # =====================================================
-# PANEL LIBUR NASIONAL
+# STATISTIK
 # =====================================================
 
-if libur_bulan_ini:
-
-    st.subheader("🇮🇩 Libur Nasional & Cuti Bersama")
-
-    df_libur = pd.DataFrame([
-        {"Tanggal": f"{h}-{bulan}-{tahun}", "Keterangan": n}
-        for h, n in libur_bulan_ini.items()
-    ])
-
-    st.dataframe(df_libur, use_container_width=True)
-
-# =====================================================
-# STATISTIK (ASLI)
-# =====================================================
-
-st.subheader("📊 Statistik Shift Bulan Ini")
+st.subheader("📊 Statistik Shift")
 
 shift_counts = {"1":0,"2":0,"3":0,"OFF":0}
 
-for col in df_baru.columns[3:]:
-    counts = df_baru[col].astype(str).value_counts()
+for col in df_filtered.columns[3:]:
+    counts = df_filtered[col].astype(str).value_counts()
     for key in shift_counts:
         shift_counts[key] += sum(
             counts.get(k,0) for k in counts.index if key in k
         )
 
-fig = plt.figure()
+fig = plt.figure(figsize=(6,4))
 plt.bar(shift_counts.keys(), shift_counts.values())
-plt.title("Total Shift")
-plt.xlabel("Jenis Shift")
-plt.ylabel("Jumlah")
+plt.grid(axis="y", linestyle="--", alpha=0.5)
 st.pyplot(fig)
 
 # =====================================================
-# TOTAL HARI KERJA PER ORANG (ASLI)
+# DOWNLOAD
 # =====================================================
 
-st.subheader("📋 Total Hari Kerja per Karyawan")
-
-rekap = []
-
-for _, row in df_baru.iterrows():
-    kerja = 0
-    for col in df_baru.columns[3:]:
-        if "OFF" not in str(row[col]):
-            kerja += 1
-    rekap.append({"NAMA": row["NAMA"], "TOTAL KERJA": kerja})
-
-df_rekap = pd.DataFrame(rekap)
-st.dataframe(df_rekap, use_container_width=True)
-
-# =====================================================
-# DOWNLOAD CSV (ASLI)
-# =====================================================
-
-csv = df_baru.to_csv(index=False).encode("utf-8")
+csv = df_filtered.to_csv(index=False).encode("utf-8")
 
 st.download_button(
-    "⬇ Download CSV",
+    "⬇ Download Jadwal CSV",
     csv,
     f"Jadwal_{bulan}_{tahun}.csv",
-    "text/csv")
+    "text/csv"
+)
