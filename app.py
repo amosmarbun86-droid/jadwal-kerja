@@ -73,7 +73,7 @@ if not st.session_state.login:
         if user == "admin" and pwd == "admin123":
             st.session_state.login = True
             st.session_state.role = "Admin"
-        elif user == "user" and pwd == "user123":
+        elif user == "spx" and pwd == "spx123":
             st.session_state.login = True
             st.session_state.role = "User"
         else:
@@ -211,15 +211,15 @@ libur_bulan_ini = {
 # =====================================================
 
 default_pola = [
-    "OFF","3","3","3",
     "OFF","2","2","2",
     "OFF","1","1","1",
+    "OFF","3","3","3",
 ]
 
 if st.session_state.role == "Admin":
     pola_input = st.text_input(
         "Edit Pola Shift (pisahkan koma)",
-        value="OFF,3,3,3,OFF,2,2,2,OFF,1,1,1"
+        value="OFF,2,2,2,OFF,1,1,1,OFF,3,3,3"
     )
     pola = pola_input.split(",")
 else:
