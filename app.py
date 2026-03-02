@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import holidays
 from datetime import datetime
 import os
+import re
 
 st.set_page_config(
     page_title="Shift App",
@@ -13,7 +14,7 @@ st.set_page_config(
 )
 
 # =====================================================
-# STYLE LAMA (ANDROID LOOK)
+# STYLE LAMA (TIDAK DIUBAH)
 # =====================================================
 
 BG = "https://images.unsplash.com/photo-1504384308090-c894fdcc538d"
@@ -57,7 +58,7 @@ header, footer {{visibility:hidden;}}
 st.title("🏢 SISTEM MANAJEMEN SHIFT")
 
 # =====================================================
-# LOGIN
+# LOGIN (SAMA)
 # =====================================================
 
 if "login" not in st.session_state:
@@ -82,12 +83,10 @@ if not st.session_state.login:
 st.success(f"Login sebagai {st.session_state.role}")
 
 # =====================================================
-# AUTO LOAD FILE PERMANEN
+# AUTO SAVE FILE PERMANEN (1 FILE UTAMA)
 # =====================================================
 
 DATA_FOLDER = "data"
-MAIN_FILE = os.path.join(DATA_FOLDER, "jadwal_utama")
-
 os.makedirs(DATA_FOLDER, exist_ok=True)
 
 uploaded_file = st.file_uploader(
@@ -95,21 +94,17 @@ uploaded_file = st.file_uploader(
     type=["xlsx", "csv"]
 )
 
-# Jika upload baru → overwrite file utama
 if uploaded_file is not None:
-    ext = uploaded_file.name.split(".")[-1]
-    MAIN_FILE_WITH_EXT = MAIN_FILE + "." + ext
-
-    # Hapus file lama
     for f in os.listdir(DATA_FOLDER):
         os.remove(os.path.join(DATA_FOLDER, f))
 
-    with open(MAIN_FILE_WITH_EXT, "wb") as f:
+    save_path = os.path.join(DATA_FOLDER, uploaded_file.name)
+
+    with open(save_path, "wb") as f:
         f.write(uploaded_file.getbuffer())
 
-    st.success("File tersimpan sebagai file utama")
+    st.success("File utama berhasil disimpan")
 
-# Cari file utama otomatis
 files = os.listdir(DATA_FOLDER)
 
 if not files:
@@ -133,16 +128,71 @@ base_cols = df.iloc[:, :3]
 base_cols.columns = ["NO", "NAMA", "TITLE"]
 
 # =====================================================
-# BULAN OTOMATIS
+# AMBIL BULAN DASAR OTOMATIS DARI NAMA FILE
 # =====================================================
 
-bulan_sekarang = datetime.now().month
-tahun_sekarang = datetime.now().year
+filename = os.path.basename(file_path)
 
-bulan = st.selectbox("Pilih Bulan", list(range(1, 13)), index=bulan_sekarang-1)
-tahun = st.number_input("Tahun", 2024, 2035, tahun_sekarang)
+bulan_map = {
+    "JANUARI":1,"FEBRUARI":2,"MARET":3,"APRIL":4,
+    "MEI":5,"JUNI":6,"JULI":7,"AGUSTUS":8,
+    "SEPTEMBER":9,"OKTOBER":10,"NOVEMBER":11,"DESEMBER":12
+}
+
+bulan_dasar = None
+tahun_dasar = None
+
+for nama_bulan in bulan_map:
+    if nama_bulan in filename.upper():
+        bulan_dasar = bulan_map[nama_bulan]
+        break
+
+match_tahun = re.search(r"20\d{2}", filename)
+if match_tahun:
+    tahun_dasar = int(match_tahun.group())
+
+if bulan_dasar is None:
+    bulan_dasar = datetime.now().month
+if tahun_dasar is None:
+    tahun_dasar = datetime.now().year
+
+# =====================================================
+# PILIH BULAN
+# =====================================================
+
+bulan = st.selectbox("Pilih Bulan", list(range(1, 13)), index=datetime.now().month-1)
+tahun = st.number_input("Tahun", 2024, 2035, datetime.now().year)
 
 jumlah_hari = calendar.monthrange(int(tahun), bulan)[1]
+
+# =====================================================
+# HITUNG OFFSET OTOMATIS
+# =====================================================
+
+def hitung_selisih_hari(b1, t1, b2, t2):
+    total = 0
+    if (t2, b2) > (t1, b1):
+        t, b = t1, b1
+        while (t, b) != (t2, b2):
+            total += calendar.monthrange(t, b)[1]
+            b += 1
+            if b > 12:
+                b = 1
+                t += 1
+    elif (t2, b2) < (t1, b1):
+        t, b = t2, b2
+        while (t, b) != (t1, b1):
+            total -= calendar.monthrange(t, b)[1]
+            b += 1
+            if b > 12:
+                b = 1
+                t += 1
+    return total
+
+total_offset = hitung_selisih_hari(
+    bulan_dasar, tahun_dasar,
+    bulan, tahun
+)
 
 # =====================================================
 # LIBUR NASIONAL
@@ -161,22 +211,22 @@ libur_bulan_ini = {
 # =====================================================
 
 default_pola = [
+    "OFF","3","3","3",
     "OFF","2","2","2",
     "OFF","1","1","1",
-    "OFF","3","3","3",
 ]
 
 if st.session_state.role == "Admin":
     pola_input = st.text_input(
         "Edit Pola Shift (pisahkan koma)",
-        value="OFF,2,2,2,OFF,1,1,1,OFF,3,3,3"
+        value="OFF,3,3,3,OFF,2,2,2,OFF,1,1,1"
     )
     pola = pola_input.split(",")
 else:
     pola = default_pola
 
 # =====================================================
-# GENERATE JADWAL
+# GENERATE JADWAL (BERKELANJUTAN)
 # =====================================================
 
 data_baru = []
@@ -191,7 +241,7 @@ for _, row in base_cols.iterrows():
 
     for i in range(jumlah_hari):
         hari_ke = i + 1
-        posisi = i % len(pola)
+        posisi = (total_offset + i) % len(pola)
         shift_val = pola[posisi]
 
         if hari_ke in libur_bulan_ini:
@@ -204,7 +254,7 @@ for _, row in base_cols.iterrows():
 df_baru = pd.DataFrame(data_baru)
 
 # =====================================================
-# TAMPILKAN
+# HIGHLIGHT (SAMA)
 # =====================================================
 
 def highlight(val):
