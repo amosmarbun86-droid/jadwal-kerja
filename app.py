@@ -114,7 +114,13 @@ st.success(f"Login sebagai {st.session_state.role}")
 # =====================================================
 
 df = pd.read_csv("Jadwal_Februari_2026_Rapih.csv")
-df.columns = df.columns.str.upper()
+
+# Bersihkan nama kolom
+df.columns = df.columns.str.strip().str.upper()
+
+# DEBUG – tampilkan kolom yang terbaca
+st.write("Kolom yang terbaca dari CSV:")
+st.write(df.columns)
 
 # =====================================================
 # PILIH BULAN & TAHUN
