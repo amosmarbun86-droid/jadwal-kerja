@@ -136,20 +136,37 @@ c.execute("SELECT COUNT(*) FROM jadwal WHERE bulan=? AND tahun=?", (bulan,tahun)
 cek = c.fetchone()[0]
 
 if cek == 0:
+
     hari_libur = holidays.Indonesia(years=tahun)
 
+    # Titik awal rotasi global (jangan diubah lagi)
+    tanggal_awal_global = datetime(2024, 1, 1)
+
     for _, row in base_cols.iterrows():
+
         for i in range(jumlah_hari):
-            posisi = i % len(pola)
+
+            tanggal_sekarang = datetime(tahun, bulan, i+1)
+
+            # Hitung selisih hari dari tanggal awal global
+            selisih_hari = (tanggal_sekarang - tanggal_awal_global).days
+
+            posisi = selisih_hari % len(pola)
             shift_val = pola[posisi]
 
-            if datetime(tahun,bulan,i+1) in hari_libur:
+            if tanggal_sekarang in hari_libur:
                 shift_val = f"{shift_val} 🇮🇩"
 
             c.execute("""
-            INSERT INTO jadwal (bulan,tahun,nama,hari,shift)
-            VALUES (?,?,?,?,?)
-            """,(bulan,tahun,row["NAMA"],i+1,shift_val))
+                INSERT INTO jadwal (bulan,tahun,nama,hari,shift)
+                VALUES (?,?,?,?,?)
+            """, (
+                bulan,
+                tahun,
+                row["NAMA"],
+                i+1,
+                shift_val
+            ))
 
     conn.commit()
 
