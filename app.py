@@ -1,3 +1,5 @@
+# app_final.py
+
 import streamlit as st
 import pandas as pd
 import calendar
@@ -7,7 +9,7 @@ from datetime import datetime
 
 st.set_page_config(page_title="Jadwal Shift Team A", page_icon="📅", layout="wide")
 
-# ================== STYLE LAMA (TIDAK DIUBAH) ==================
+# ================== STYLE FINAL ==================
 
 BG = "https://images.unsplash.com/photo-1504384308090-c894fdcc538d"
 
@@ -36,11 +38,8 @@ background-attachment:fixed;
 
 header, footer {{visibility:hidden;}}
 
-/* APPBAR DI BAWAH */
+/* APPBAR DI ATAS */
 .appbar {{
-position: fixed;
-bottom:0;
-left:0;
 width:100%;
 height:60px;
 background:#0d6efd;
@@ -48,31 +47,30 @@ color:white;
 display:flex;
 align-items:center;
 padding-left:20px;
-font-size:18px;
+font-size:20px;
 font-weight:bold;
-z-index:999;
+margin-bottom:20px;
 }}
 
-/* TURUNKAN SEMUA KONTEN */
 .block-container {{
-padding-top:120px;
-padding-bottom:100px;
+padding-top:20px;
+padding-bottom:40px;
 }}
 
-/* TURUNKAN SIDEBAR */
-section[data-testid="stSidebar"] {{
-padding-top:120px;
-background-color: rgba(0,0,0,0.6);
-border-right:1px solid rgba(255,255,255,0.1);
+th:first-child, td:first-child{{
+min-width:120px;
+}}
+
+th:nth-child(2), td:nth-child(2){{
+min-width:80px;
 }}
 
 @media (max-width:768px){{
-
 .block-container{{
-padding-top:130px;
+padding-top:20px;
 padding-left:10px;
 padding-right:10px;
-padding-bottom:110px;
+padding-bottom:40px;
 }}
 
 .appbar{{
@@ -92,32 +90,16 @@ overflow-x:auto;
 th, td{{
 white-space:nowrap;
 }}
-
-th:first-child, td:first-child{{
-min-width:120px;
 }}
-
-th:nth-child(2), td:nth-child(2){{
-min-width:80px;
-}}
-
-}}
-
 </style>
 
 <div class="appbar">📅 Schedule By Amosrcp86</div>
 
 """, unsafe_allow_html=True)
+
 st.title("🏢 SCHEDULE MANAJEMEN TEAM A")
 
-# ================== MENU ==================
-
-menu = st.sidebar.selectbox(
-    "MENU",
-    ["📅 Jadwal Shift", "🔐 Admin Panel"]
-)
-
-# ================== LOAD FILE ==================
+# ================== LOAD FILE TETAP ==================
 
 FILE_TETAP = "karyawan_bersih.csv"
 
@@ -128,11 +110,11 @@ else:
 
 df.columns = df.columns.str.strip().str.upper()
 base_cols = df.iloc[:, :3]
-base_cols.columns = ["NO","NAMA","TITLE"]
+base_cols.columns = ["NO", "NAMA", "TITLE"]
 
 # ================== PILIH BULAN ==================
 
-bulan = st.selectbox("Pilih Bulan", list(range(1,13)), index=datetime.now().month-1)
+bulan = st.selectbox("Pilih Bulan", list(range(1, 13)), index=datetime.now().month-1)
 tahun = st.number_input("Tahun", 2024, 2035, datetime.now().year)
 
 jumlah_hari = calendar.monthrange(int(tahun), bulan)[1]
@@ -141,7 +123,9 @@ jumlah_hari = calendar.monthrange(int(tahun), bulan)[1]
 
 pola = ["OFF","2","2","2","OFF","1","1","1","OFF","3","3","3"]
 
-tanggal_awal_global = datetime(2026,3,1)
+# ================== ROTASI GLOBAL (TIDAK PERNAH RESET) ==================
+
+tanggal_awal_global = datetime(2026, 3, 1)
 hari_libur = holidays.Indonesia(years=tahun)
 
 data_baru = []
@@ -156,143 +140,88 @@ for _, row in base_cols.iterrows():
 
     for i in range(jumlah_hari):
 
-        tanggal = datetime(tahun, bulan, i+1)
+        tanggal_sekarang = datetime(tahun, bulan, i+1)
+        selisih_hari = (tanggal_sekarang - tanggal_awal_global).days
 
-        selisih = (tanggal - tanggal_awal_global).days
-        posisi = selisih % len(pola)
+        posisi = selisih_hari % len(pola)
+        shift_val = pola[posisi]
 
-        shift = pola[posisi]
+        if tanggal_sekarang in hari_libur:
+            shift_val = f"{shift_val} 🇮🇩"
 
-        if tanggal in hari_libur:
-            shift = f"{shift} 🇮🇩"
-
-        baris[str(i+1)] = shift
+        baris[str(i+1)] = shift_val
 
     data_baru.append(baris)
 
 df_baru = pd.DataFrame(data_baru)
 
-# ================== HIGHLIGHT ==================
+# ================== HIGHLIGHT SHIFT ==================
 
 def highlight(val):
-
     val = str(val)
-
     if "🇮🇩" in val:
         return "background-color:#b30000;color:white;font-weight:bold;"
-
     if val == "OFF":
         return "background-color:red;color:white;"
-
     return ""
 
-# ================== MENU USER ==================
+# ================== MENU TAB ==================
 
-if menu == "📅 Jadwal Shift":
+tab_menu = st.tabs([
+    "📅 Jadwal Shift",
+    "📊 Dashboard",
+    "⚙️ Admin Panel"
+])
 
-    st.dataframe(
-        df_baru.style.applymap(highlight),
-        use_container_width=True
-    )
+# ================== TAB 1: Jadwal Shift ==================
 
-# ================== ADMIN PANEL ==================
+with tab_menu[0]:
+    st.subheader("Jadwal Shift Team A")
+    st.dataframe(df_baru.style.applymap(highlight), use_container_width=True)
 
-if menu == "🔐 Admin Panel":
+# ================== TAB 2: Dashboard ==================
 
-    st.subheader("Login Admin")
+with tab_menu[1]:
+    st.subheader("Dashboard Manager")
 
-    user = st.text_input("Username")
-    pwd = st.text_input("Password", type="password")
+    total_karyawan = len(df_baru)
+    total_off = 0
+    total_kerja = 0
 
-    if user == "admin" and pwd == "admin123":
+    for col in df_baru.columns[3:]:
+        counts = df_baru[col].astype(str).value_counts()
+        total_off += counts.get("OFF",0)
+        total_kerja += len(df_baru) - counts.get("OFF",0)
 
-        st.success("Login Admin Berhasil")
+    col1,col2,col3 = st.columns(3)
+    col1.metric("Total Karyawan", total_karyawan)
+    col2.metric("Total Hari Kerja", total_kerja)
+    col3.metric("Total OFF", total_off)
 
-        st.markdown("---")
+    fig = plt.figure()
+    plt.bar(["Kerja","OFF"], [total_kerja,total_off])
+    st.pyplot(fig)
 
-        st.subheader("➕ Tambah Karyawan")
+# ================== TAB 3: Admin Panel ==================
 
-        nama = st.text_input("Nama")
-        title = st.text_input("Title")
+with tab_menu[2]:
+    st.subheader("Admin Panel")
 
-        if st.button("Tambah"):
+    # Input karyawan baru
+    st.subheader("Tambah Karyawan")
+    nama = st.text_input("Nama")
+    title = st.text_input("Title")
+    if st.button("Tambah"):
+        new_no = len(base_cols) + 1
+        new_row = pd.DataFrame([[new_no, nama, title]], columns=["NO","NAMA","TITLE"])
+        base_cols = pd.concat([base_cols, new_row])
+        base_cols.to_csv(FILE_TETAP, index=False)
+        st.success("Karyawan berhasil ditambahkan")
 
-            new_no = len(base_cols) + 1
-
-            new_row = pd.DataFrame(
-                [[new_no, nama, title]],
-                columns=["NO","NAMA","TITLE"]
-            )
-
-            base_cols = pd.concat([base_cols, new_row])
-
-            base_cols.to_csv(FILE_TETAP, index=False)
-
-            st.success("Karyawan berhasil ditambahkan")
-
-        st.markdown("---")
-
-        st.subheader("🗑 Hapus Karyawan")
-
-        hapus = st.selectbox(
-            "Pilih Karyawan",
-            base_cols["NAMA"]
-        )
-
-        if st.button("Hapus"):
-
-            base_cols = base_cols[base_cols["NAMA"] != hapus]
-
-            base_cols.to_csv(FILE_TETAP, index=False)
-
-            st.success("Karyawan dihapus")
-
-        st.markdown("---")
-
-        st.subheader("📤 Upload Data Baru")
-
-        upload = st.file_uploader("Upload CSV", type=["csv"])
-
-        if upload:
-
-            df_upload = pd.read_csv(upload)
-            df_upload.to_csv(FILE_TETAP, index=False)
-
-            st.success("Data berhasil diganti")
-
-        st.markdown("---")
-
-        st.subheader("📊 Dashboard Manager")
-
-        total_karyawan = len(df_baru)
-        total_off = 0
-        total_kerja = 0
-
-        for col in df_baru.columns[3:]:
-
-            counts = df_baru[col].astype(str).value_counts()
-
-            total_off += counts.get("OFF",0)
-            total_kerja += len(df_baru) - counts.get("OFF",0)
-
-        col1,col2,col3 = st.columns(3)
-
-        col1.metric("Total Karyawan", total_karyawan)
-        col2.metric("Total Hari Kerja", total_kerja)
-        col3.metric("Total OFF", total_off)
-
-        fig = plt.figure()
-
-        plt.bar(["Kerja","OFF"], [total_kerja,total_off])
-
-        st.pyplot(fig)
-
-        st.markdown("---")
-
-        st.subheader("🔗 Link Aplikasi")
-
-        st.code("https://jadwal-kerja-eqhfsftfwps6axdunrghan.streamlit.app")
-
-    else:
-
-        st.info("Masukkan username dan password admin")
+    # Hapus karyawan
+    st.subheader("Hapus Karyawan")
+    hapus = st.selectbox("Pilih karyawan", base_cols["NAMA"])
+    if st.button("Hapus"):
+        base_cols = base_cols[base_cols["NAMA"] != hapus]
+        base_cols.to_csv(FILE_TETAP, index=False)
+        st.success("Karyawan dihapus")
