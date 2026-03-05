@@ -14,13 +14,20 @@ BG = "https://images.unsplash.com/photo-1504384308090-c894fdcc538d"
 
 st.markdown(f"""
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+html, body, [class*="css"] {{
+font-family: 'Poppins', sans-serif;
+}}
 
 .stApp {{
-    background:
-    linear-gradient(rgba(0,0,0,0.75), rgba(0,0,0,0.75)),
-    url("{BG}");
-    background-size: cover;
-    background-attachment: fixed;
+color:white;
+background:
+linear-gradient(rgba(0,0,0,0.75), rgba(0,0,0,0.75)),
+url("{BG}");
+background-size:cover;
+background-position:center;
+background-attachment:fixed;
 }}
 
 header, footer {{visibility:hidden;}}
