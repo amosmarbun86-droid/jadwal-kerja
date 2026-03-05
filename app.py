@@ -5,7 +5,8 @@ import matplotlib.pyplot as plt
 import holidays
 from datetime import datetime
 
-st.set_page_config(page_title="Shift App", page_icon="📅", layout="wide")
+st.set_page_config( page_title="Jadwal Shift Team A", page_icon="📅", layout="wide")
+
 
 # ================== STYLE LAMA (TIDAK DIUBAH) ==================
 
@@ -42,6 +43,24 @@ header, footer {{visibility:hidden;}}
     padding-top:80px;
     padding-bottom:40px;
 }}
+@media (max-width:768px){
+
+.block-container{
+padding-top:90px;
+padding-left:10px;
+padding-right:10px;
+}
+
+.appbar{
+height:50px;
+font-size:16px;
+}
+
+table{
+font-size:12px;
+}
+
+}
 </style>
 
 <div class="appbar">📅 Sistem Manajemen Shift</div>
