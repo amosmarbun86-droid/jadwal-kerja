@@ -38,7 +38,8 @@ header, footer {{visibility:hidden;}}
 
 .appbar {{
 position: fixed;
-top:0; left:0;
+top:0;
+left:0;
 width:100%;
 height:60px;
 background:#0d6efd;
@@ -52,14 +53,21 @@ z-index:999;
 }}
 
 .block-container {{
-padding-top:80px;
+padding-top:90px;
 padding-bottom:40px;
+}}
+
+/* PERBAIKAN SIDEBAR (TIDAK KETUTUP APPBAR) */
+section[data-testid="stSidebar"] {{
+margin-top:70px;
+background-color: rgba(0,0,0,0.6);
+border-right:1px solid rgba(255,255,255,0.1);
 }}
 
 @media (max-width:768px){{
 
 .block-container{{
-padding-top:90px;
+padding-top:100px;
 padding-left:10px;
 padding-right:10px;
 }}
@@ -90,16 +98,6 @@ th:nth-child(2), td:nth-child(2){{
 min-width:80px;
 }}
 
-section[data-testid="stSidebar"] {{
-padding-top:80px;
-}}
-
-section[data-testid="stSidebar"] {{
-margin-top:70px;
-}}
-
-section[data-testid="stSidebar"] {{
-background-color: rgba(0,0,0,0.6);
 }}
 
 </style>
