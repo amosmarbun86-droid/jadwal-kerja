@@ -36,9 +36,10 @@ background-attachment:fixed;
 
 header, footer {{visibility:hidden;}}
 
+/* APPBAR PINDAH KE BAWAH */
 .appbar {{
 position: fixed;
-top:0;
+bottom:0;
 left:0;
 width:100%;
 height:60px;
@@ -47,19 +48,17 @@ color:white;
 display:flex;
 align-items:center;
 padding-left:20px;
-font-size:20px;
+font-size:18px;
 font-weight:bold;
 z-index:999;
 }}
 
 .block-container {{
-padding-top:90px;
-padding-bottom:40px;
+padding-top:40px;
+padding-bottom:90px;
 }}
 
-/* PERBAIKAN SIDEBAR (TIDAK KETUTUP APPBAR) */
 section[data-testid="stSidebar"] {{
-margin-top:70px;
 background-color: rgba(0,0,0,0.6);
 border-right:1px solid rgba(255,255,255,0.1);
 }}
@@ -67,9 +66,10 @@ border-right:1px solid rgba(255,255,255,0.1);
 @media (max-width:768px){{
 
 .block-container{{
-padding-top:100px;
+padding-top:40px;
 padding-left:10px;
 padding-right:10px;
+padding-bottom:100px;
 }}
 
 .appbar{{
@@ -105,7 +105,6 @@ min-width:80px;
 <div class="appbar">📅 Schedule By Amosrcp86</div>
 
 """, unsafe_allow_html=True)
-
 st.title("🏢 SCHEDULE MANAJEMEN TEAM A")
 
 # ================== MENU ==================
