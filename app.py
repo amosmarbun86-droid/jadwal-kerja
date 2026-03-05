@@ -65,10 +65,10 @@ font-size:12px;
 }}
 
 </style>
-<div class="appbar">📅 Sistem Manajemen Shift</div>
+<div class="appbar">📅 Schedule Manajemen Team A</div>
 """, unsafe_allow_html=True)
 
-st.title("🏢 SISTEM MANAJEMEN SHIFT")
+st.title("🏢 SCHEDULE MANAJEMEN TEAM A")
 
 # ================== LOGIN ==================
 
