@@ -16,7 +16,7 @@ st.markdown(f"""
 <style>
 
 h1 {{
-font-size:22px !important;
+font-size:20px !important;
 }}
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
@@ -96,7 +96,7 @@ min-width:80px;
 }}
 
 </style>
-<div class="appbar">📅 Schedule Manajemen Team A</div>
+<div class="appbar">📅 Schedule By Amosrcp86</div>
 """, unsafe_allow_html=True)
 
 st.title("🏢 SCHEDULE MANAJEMEN TEAM A")
