@@ -98,6 +98,10 @@ section[data-testid="stSidebar"] {{
 margin-top:70px;
 }}
 
+section[data-testid="stSidebar"] {{
+background-color: rgba(0,0,0,0.6);
+}}
+
 </style>
 
 <div class="appbar">📅 Schedule By Amosrcp86</div>
