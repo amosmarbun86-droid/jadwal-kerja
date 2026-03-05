@@ -72,7 +72,7 @@ if not st.session_state.login:
 
 # ================== LOAD FILE TETAP ==================
 
-FILE_TETAP = "karyawan.xlsx"
+FILE_TETAP = "karyawan.csv"
 df = pd.read_excel(FILE_TETAP)
 
 df.columns = df.columns.str.strip().str.upper()
