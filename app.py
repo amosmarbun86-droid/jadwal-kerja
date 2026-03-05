@@ -60,8 +60,27 @@ font-size:16px;
 
 table{{
 font-size:12px;
+width:100%;
 }}
 
+/* supaya tabel bisa di scroll di HP */
+[data-testid="stDataFrame"]{{
+overflow-x:auto;
+}}
+
+/* nama karyawan jangan terpotong */
+th, td{{
+white-space:nowrap;
+}}
+
+/* kolom pertama lebih lebar */
+th:first-child, td:first-child{{
+min-width:120px;
+}}
+
+/* kolom title */
+th:nth-child(2), td:nth-child(2){{
+min-width:80px;
 }}
 
 </style>
