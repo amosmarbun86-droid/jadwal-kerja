@@ -1,4 +1,4 @@
-# app_final.py
+# app_final_admin.py
 
 import streamlit as st
 import pandas as pd
@@ -123,7 +123,7 @@ jumlah_hari = calendar.monthrange(int(tahun), bulan)[1]
 
 pola = ["OFF","2","2","2","OFF","1","1","1","OFF","3","3","3"]
 
-# ================== ROTASI GLOBAL (TIDAK PERNAH RESET) ==================
+# ================== ROTASI GLOBAL ==================
 
 tanggal_awal_global = datetime(2026, 3, 1)
 hari_libur = holidays.Indonesia(years=tahun)
@@ -165,7 +165,7 @@ def highlight(val):
         return "background-color:red;color:white;"
     return ""
 
-# ================== MENU TAB ==================
+# ================== TAB MENU ==================
 
 tab_menu = st.tabs([
     "📅 Jadwal Shift",
@@ -207,7 +207,23 @@ with tab_menu[1]:
 with tab_menu[2]:
     st.subheader("Admin Panel")
 
-    # Input karyawan baru
+    # Cek login admin
+    if "admin_logged_in" not in st.session_state:
+        st.session_state.admin_logged_in = False
+
+    if not st.session_state.admin_logged_in:
+        user = st.text_input("Username Admin")
+        pwd = st.text_input("Password Admin", type="password")
+
+        if st.button("Login Admin"):
+            if user == "admin" and pwd == "admin123":
+                st.session_state.admin_logged_in = True
+                st.success("Login Admin Berhasil")
+            else:
+                st.error("Hanya admin yang bisa mengakses")
+        st.stop()
+
+    # Jika sudah login, tampilkan panel admin
     st.subheader("Tambah Karyawan")
     nama = st.text_input("Nama")
     title = st.text_input("Title")
@@ -218,7 +234,6 @@ with tab_menu[2]:
         base_cols.to_csv(FILE_TETAP, index=False)
         st.success("Karyawan berhasil ditambahkan")
 
-    # Hapus karyawan
     st.subheader("Hapus Karyawan")
     hapus = st.selectbox("Pilih karyawan", base_cols["NAMA"])
     if st.button("Hapus"):
