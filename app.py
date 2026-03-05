@@ -12,7 +12,7 @@ st.set_page_config( page_title="Jadwal Shift Team A", page_icon="📅", layout="
 
 BG = "https://images.unsplash.com/photo-1504384308090-c894fdcc538d"
 
-st.markdown(f"""
+st.markdown("""
 <style>
 .stApp {{
     background:
