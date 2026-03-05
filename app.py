@@ -21,7 +21,7 @@ font-family: 'Poppins', sans-serif;
 }}
 
 h1 {{
-font-size:22px !important;
+font-size:20px !important;
 }}
 
 .stApp {{
