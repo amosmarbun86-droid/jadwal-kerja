@@ -36,7 +36,7 @@ background-attachment:fixed;
 
 header, footer {{visibility:hidden;}}
 
-/* APPBAR PINDAH KE BAWAH */
+/* APPBAR DI BAWAH */
 .appbar {{
 position: fixed;
 bottom:0;
@@ -53,12 +53,15 @@ font-weight:bold;
 z-index:999;
 }}
 
+/* TURUNKAN SEMUA KONTEN */
 .block-container {{
-padding-top:40px;
-padding-bottom:90px;
+padding-top:120px;
+padding-bottom:100px;
 }}
 
+/* TURUNKAN SIDEBAR */
 section[data-testid="stSidebar"] {{
+padding-top:120px;
 background-color: rgba(0,0,0,0.6);
 border-right:1px solid rgba(255,255,255,0.1);
 }}
@@ -66,10 +69,10 @@ border-right:1px solid rgba(255,255,255,0.1);
 @media (max-width:768px){{
 
 .block-container{{
-padding-top:40px;
+padding-top:130px;
 padding-left:10px;
 padding-right:10px;
-padding-bottom:100px;
+padding-bottom:110px;
 }}
 
 .appbar{{
