@@ -89,6 +89,11 @@ min-width:120px;
 th:nth-child(2), td:nth-child(2){{
 min-width:80px;
 }}
+
+section[data-testid="stSidebar"] {{
+padding-top:80px;
+}}
+
 section[data-testid="stSidebar"] {{
 margin-top:70px;
 }}
