@@ -12,8 +12,9 @@ st.set_page_config( page_title="Jadwal Shift Team A", page_icon="📅", layout="
 
 BG = "https://images.unsplash.com/photo-1504384308090-c894fdcc538d"
 
-st.markdown("""
+st.markdown(f"""
 <style>
+
 .stApp {{
     background:
     linear-gradient(rgba(0,0,0,0.75), rgba(0,0,0,0.75)),
@@ -43,26 +44,27 @@ header, footer {{visibility:hidden;}}
     padding-top:80px;
     padding-bottom:40px;
 }}
-@media (max-width:768px){
 
-.block-container{
+@media (max-width:768px){{
+
+.block-container{{
 padding-top:90px;
 padding-left:10px;
 padding-right:10px;
-}
+}}
 
-.appbar{
+.appbar{{
 height:50px;
 font-size:16px;
-}
+}}
 
-table{
+table{{
 font-size:12px;
-}
+}}
 
-}
+}}
+
 </style>
-
 <div class="appbar">📅 Sistem Manajemen Shift</div>
 """, unsafe_allow_html=True)
 
