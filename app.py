@@ -96,7 +96,7 @@ pola = ["OFF","2","2","2","OFF","1","1","1","OFF","3","3","3"]
 
 # ================== ROTASI GLOBAL (TIDAK PERNAH RESET) ==================
 
-tanggal_awal_global = datetime(2024, 1, 1)
+tanggal_awal_global = datetime(2026, 3, 1)
 hari_libur = holidays.Indonesia(years=tahun)
 
 data_baru = []
