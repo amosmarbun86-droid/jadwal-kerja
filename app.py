@@ -73,7 +73,11 @@ if not st.session_state.login:
 # ================== LOAD FILE TETAP ==================
 
 FILE_TETAP = "karyawan.csv"
-df = pd.read_excel(FILE_TETAP)
+
+if FILE_TETAP.endswith(".csv"):
+    df = pd.read_csv(FILE_TETAP)
+else:
+    df = pd.read_excel(FILE_TETAP)
 
 df.columns = df.columns.str.strip().str.upper()
 base_cols = df.iloc[:, :3]
