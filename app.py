@@ -38,7 +38,6 @@ background-attachment:fixed;
 
 header, footer {{visibility:hidden;}}
 
-/* APPBAR DI ATAS */
 .appbar {{
 width:100%;
 height:60px;
@@ -57,40 +56,6 @@ padding-top:20px;
 padding-bottom:40px;
 }}
 
-th:first-child, td:first-child{{
-min-width:120px;
-}}
-
-th:nth-child(2), td:nth-child(2){{
-min-width:80px;
-}}
-
-@media (max-width:768px){{
-.block-container{{
-padding-top:20px;
-padding-left:10px;
-padding-right:10px;
-padding-bottom:40px;
-}}
-
-.appbar{{
-height:50px;
-font-size:16px;
-}}
-
-table{{
-font-size:12px;
-width:100%;
-}}
-
-[data-testid="stDataFrame"]{{
-overflow-x:auto;
-}}
-
-th, td{{
-white-space:nowrap;
-}}
-}}
 </style>
 
 <div class="appbar">📅 Schedule By Amosrcp86</div>
@@ -99,7 +64,7 @@ white-space:nowrap;
 
 st.title("🏢 SCHEDULE MANAJEMEN TEAM A")
 
-# ================== LOAD FILE TETAP ==================
+# ================== LOAD FILE ==================
 
 FILE_TETAP = "karyawan_bersih.csv"
 
@@ -128,6 +93,24 @@ pola = ["OFF","2","2","2","OFF","1","1","1","OFF","3","3","3"]
 tanggal_awal_global = datetime(2026, 3, 1)
 hari_libur = holidays.Indonesia(years=tahun)
 
+# ================== DATA HARI LIBUR BULAN INI ==================
+
+libur_bulan_ini = []
+
+for tanggal, nama in hari_libur.items():
+
+    if tanggal.month == bulan and tanggal.year == tahun:
+
+        libur_bulan_ini.append({
+            "Tanggal": tanggal.strftime("%d-%m-%Y"),
+            "Hari": tanggal.strftime("%A"),
+            "Keterangan": nama
+        })
+
+df_libur = pd.DataFrame(libur_bulan_ini)
+
+# ================== GENERATE SHIFT ==================
+
 data_baru = []
 
 for _, row in base_cols.iterrows():
@@ -141,9 +124,11 @@ for _, row in base_cols.iterrows():
     for i in range(jumlah_hari):
 
         tanggal_sekarang = datetime(tahun, bulan, i+1)
+
         selisih_hari = (tanggal_sekarang - tanggal_awal_global).days
 
         posisi = selisih_hari % len(pola)
+
         shift_val = pola[posisi]
 
         if tanggal_sekarang in hari_libur:
@@ -158,11 +143,15 @@ df_baru = pd.DataFrame(data_baru)
 # ================== HIGHLIGHT SHIFT ==================
 
 def highlight(val):
+
     val = str(val)
+
     if "🇮🇩" in val:
         return "background-color:#b30000;color:white;font-weight:bold;"
+
     if val == "OFF":
         return "background-color:red;color:white;"
+
     return ""
 
 # ================== TAB MENU ==================
@@ -173,70 +162,122 @@ tab_menu = st.tabs([
     "⚙️ Admin Panel"
 ])
 
-# ================== TAB 1: Jadwal Shift ==================
+# ================== TAB 1 ==================
 
 with tab_menu[0]:
-    st.subheader("Jadwal Shift Team A")
-    st.dataframe(df_baru.style.applymap(highlight), use_container_width=True)
 
-# ================== TAB 2: Dashboard ==================
+    st.subheader("Jadwal Shift Team A")
+
+    st.dataframe(
+        df_baru.style.applymap(highlight),
+        use_container_width=True
+    )
+
+# ================== TAB 2 DASHBOARD ==================
 
 with tab_menu[1]:
+
     st.subheader("Dashboard Manager")
 
     total_karyawan = len(df_baru)
+
     total_off = 0
     total_kerja = 0
 
     for col in df_baru.columns[3:]:
+
         counts = df_baru[col].astype(str).value_counts()
+
         total_off += counts.get("OFF",0)
+
         total_kerja += len(df_baru) - counts.get("OFF",0)
 
     col1,col2,col3 = st.columns(3)
+
     col1.metric("Total Karyawan", total_karyawan)
     col2.metric("Total Hari Kerja", total_kerja)
     col3.metric("Total OFF", total_off)
 
     fig = plt.figure()
+
     plt.bar(["Kerja","OFF"], [total_kerja,total_off])
+
     st.pyplot(fig)
 
-# ================== TAB 3: Admin Panel ==================
+    # ================== DASHBOARD HARI LIBUR ==================
+
+    st.divider()
+
+    st.subheader("🇮🇩 Hari Libur Nasional")
+
+    if df_libur.empty:
+
+        st.success("Tidak ada hari libur nasional bulan ini")
+
+    else:
+
+        st.warning(f"Ada {len(df_libur)} hari libur nasional bulan ini")
+
+        st.dataframe(
+            df_libur,
+            use_container_width=True
+        )
+
+# ================== TAB 3 ADMIN ==================
 
 with tab_menu[2]:
+
     st.subheader("Admin Panel")
 
-    # Cek login admin
     if "admin_logged_in" not in st.session_state:
         st.session_state.admin_logged_in = False
 
     if not st.session_state.admin_logged_in:
+
         user = st.text_input("Username Admin")
         pwd = st.text_input("Password Admin", type="password")
 
         if st.button("Login Admin"):
+
             if user == "admin" and pwd == "admin123":
+
                 st.session_state.admin_logged_in = True
                 st.success("Login Admin Berhasil")
+
             else:
+
                 st.error("Hanya admin yang bisa mengakses")
+
         st.stop()
 
-    # Jika sudah login, tampilkan panel admin
     st.subheader("Tambah Karyawan")
+
     nama = st.text_input("Nama")
     title = st.text_input("Title")
+
     if st.button("Tambah"):
+
         new_no = len(base_cols) + 1
-        new_row = pd.DataFrame([[new_no, nama, title]], columns=["NO","NAMA","TITLE"])
+
+        new_row = pd.DataFrame(
+            [[new_no, nama, title]],
+            columns=["NO","NAMA","TITLE"]
+        )
+
         base_cols = pd.concat([base_cols, new_row])
+
         base_cols.to_csv(FILE_TETAP, index=False)
+
         st.success("Karyawan berhasil ditambahkan")
 
     st.subheader("Hapus Karyawan")
+
     hapus = st.selectbox("Pilih karyawan", base_cols["NAMA"])
+
     if st.button("Hapus"):
+
         base_cols = base_cols[base_cols["NAMA"] != hapus]
+
         base_cols.to_csv(FILE_TETAP, index=False)
+
         st.success("Karyawan dihapus")
