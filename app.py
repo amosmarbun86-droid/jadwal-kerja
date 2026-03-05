@@ -72,7 +72,7 @@ if not st.session_state.login:
 
 # ================== LOAD FILE TETAP ==================
 
-FILE_TETAP = "FILE_TETAP = "karyawan_bersih.csv"
+FILE_TETAP = "karyawan_bersih.csv"
 
 if FILE_TETAP.endswith(".csv"):
     df = pd.read_csv(FILE_TETAP)
