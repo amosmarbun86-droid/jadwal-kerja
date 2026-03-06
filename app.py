@@ -274,40 +274,40 @@ with tab_menu[1]:
 
 
     # ===============================================
-    # KALENDER SHIFT WARNA OTOMATIS
-    # ===============================================
+# KALENDER SHIFT WARNA OTOMATIS
+# ===============================================
 
-    st.divider()
-    st.subheader("📅 Kalender Shift Visual")
+st.divider()
+st.subheader("📅 Kalender Shift Visual")
 
-    warna_shift = {
-        "1": "#3498db",
-        "2": "#2ecc71",
-        "3": "#f1c40f",
-        "OFF": "#e74c3c"
-    }
+warna_shift = {
+    "1": "#3498db",
+    "2": "#2ecc71",
+    "3": "#f1c40f",
+    "OFF": "#e74c3c"
+}
 
-    kal = calendar.monthcalendar(tahun, bulan)
+kal = calendar.monthcalendar(tahun, bulan)
 
-    kal_display = []
+kal_display = []
 
-    for minggu in kal:
+for minggu in kal:
 
-        row = []
+    row = []
 
-        for hari in minggu:
+    for hari in minggu:
 
-            if hari == 0:
+        if hari == 0:
 
-                row.append("")
+            row.append("")
 
-            else:
+        else:
 
-                shift = str(df_baru[str(hari)].iloc[0]).replace(" 🇮🇩","")
+            shift = str(df_baru[str(hari)].iloc[0]).replace(" 🇮🇩","")
 
-                warna = warna_shift.get(shift,"#888")
+            warna = warna_shift.get(shift, "#888")
 
-                                html = f"""
+            html = f"""
 <div style="
 background-color:{warna};
 height:60px;
@@ -326,18 +326,18 @@ margin:auto;
 </div>
 """
 
-                row.append(html)
+            row.append(html)
 
-        kal_display.append(row)
+    kal_display.append(row)
 
-    df_kalender = pd.DataFrame(
-        kal_display,
-        columns=["Sen","Sel","Rab","Kam","Jum","Sab","Min"]
-    )
+df_kalender = pd.DataFrame(
+    kal_display,
+    columns=["Sen","Sel","Rab","Kam","Jum","Sab","Min"]
+)
 
-    st.markdown(
-        df_kalender.to_html(escape=False,index=False),
-        unsafe_allow_html=True
+st.markdown(
+    df_kalender.to_html(escape=False, index=False),
+    unsafe_allow_html=True
 )
 
 
