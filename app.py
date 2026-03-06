@@ -328,7 +328,7 @@ with tab_menu[1]:
         columns=["Sen","Sel","Rab","Kam","Jum","Sab","Min"]
     )
 
-    st.write(
+    st.markdown(
         df_kalender.to_html(escape=False,index=False),
         unsafe_allow_html=True
 )
