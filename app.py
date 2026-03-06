@@ -307,17 +307,24 @@ with tab_menu[1]:
 
                 warna = warna_shift.get(shift,"#888")
 
-                html = f"""
-                <div style="
-                background:{warna};
-                padding:8px;
-                border-radius:8px;
-                text-align:center;
-                color:white;
-                ">
-                {hari}<br>{shift}
-                </div>
-                """
+                                html = f"""
+<div style="
+background-color:{warna};
+height:60px;
+width:80px;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+border-radius:10px;
+font-weight:bold;
+color:white;
+margin:auto;
+">
+{hari}
+<span style="font-size:12px">{shift}</span>
+</div>
+"""
 
                 row.append(html)
 
@@ -346,10 +353,7 @@ st.divider()
 st.subheader("🚀 Upgrade Dashboard Tambahan")
 
 # ================== DASHBOARD LIBUR NASIONAL ==================
-st.markdown("### 🇮🇩 Peringatan Hari Libur Nasional")
-
-libur_list = []
-for tgl, nama in hari_libur.items():
+st.markdown("### 🇮🇩 Pen hari_libur.items():
     if tgl.month == bulan and tgl.year == tahun:
         libur_list.append({
             "Tanggal": tgl.strftime("%d-%m-%Y"),
