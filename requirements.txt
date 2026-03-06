@@ -2,5 +2,6 @@ streamlit
 pandas
 matplotlib
 holidays
+streamlit-calendar
 openpyxl
 fpdf
