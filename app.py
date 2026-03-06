@@ -241,6 +241,97 @@ with tab_menu[2]:
         base_cols.to_csv(FILE_TETAP, index=False)
         st.success("Karyawan dihapus")
 
+# =================================================
+# DASHBOARD TAMBAHAN (AMAN - TIDAK MERUBAH SISTEM)
+# =================================================
+
+with tab_menu[1]:
+
+    st.divider()
+    st.subheader("🇮🇩 Hari Libur Nasional")
+
+    libur_bulan_ini = []
+
+    for tanggal, nama in hari_libur.items():
+
+        if tanggal.month == bulan and tanggal.year == tahun:
+
+            libur_bulan_ini.append({
+                "Tanggal": tanggal.strftime("%d-%m-%Y"),
+                "Hari": tanggal.strftime("%A"),
+                "Keterangan": nama
+            })
+
+    if len(libur_bulan_ini) == 0:
+
+        st.success("Tidak ada hari libur nasional bulan ini")
+
+    else:
+
+        st.warning(f"Ada {len(libur_bulan_ini)} hari libur nasional")
+
+        st.dataframe(libur_bulan_ini, use_container_width=True)
+
+
+    # ===============================================
+    # KALENDER SHIFT WARNA OTOMATIS
+    # ===============================================
+
+    st.divider()
+    st.subheader("📅 Kalender Shift Visual")
+
+    warna_shift = {
+        "1": "#3498db",
+        "2": "#2ecc71",
+        "3": "#f1c40f",
+        "OFF": "#e74c3c"
+    }
+
+    kal = calendar.monthcalendar(tahun, bulan)
+
+    kal_display = []
+
+    for minggu in kal:
+
+        row = []
+
+        for hari in minggu:
+
+            if hari == 0:
+
+                row.append("")
+
+            else:
+
+                shift = str(df_baru[str(hari)].iloc[0]).replace(" 🇮🇩","")
+
+                warna = warna_shift.get(shift,"#888")
+
+                html = f"""
+                <div style="
+                background:{warna};
+                padding:8px;
+                border-radius:8px;
+                text-align:center;
+                color:white;
+                ">
+                {hari}<br>{shift}
+                </div>
+                """
+
+                row.append(html)
+
+        kal_display.append(row)
+
+    df_kalender = pd.DataFrame(
+        kal_display,
+        columns=["Sen","Sel","Rab","Kam","Jum","Sab","Min"]
+    )
+
+    st.write(
+        df_kalender.to_html(escape=False,index=False),
+        unsafe_allow_html=True
+)
 
 
 # =========================================================
