@@ -353,8 +353,15 @@ st.divider()
 st.subheader("🚀 Upgrade Dashboard Tambahan")
 
 # ================== DASHBOARD LIBUR NASIONAL ==================
-st.markdown("### 🇮🇩 Pen hari_libur.items():
+
+st.markdown("### 🇮🇩 Peringatan Hari Libur Nasional")
+
+libur_list = []
+
+for tgl, nama in hari_libur.items():
+
     if tgl.month == bulan and tgl.year == tahun:
+
         libur_list.append({
             "Tanggal": tgl.strftime("%d-%m-%Y"),
             "Hari": tgl.strftime("%A"),
@@ -362,11 +369,14 @@ st.markdown("### 🇮🇩 Pen hari_libur.items():
         })
 
 if len(libur_list) == 0:
-    st.success("Tidak ada hari libur nasional bulan ini")
-else:
-    st.warning(f"Terdapat {len(libur_list)} hari libur nasional bulan ini")
-    st.dataframe(libur_list, use_container_width=True)
 
+    st.success("Tidak ada hari libur nasional bulan ini")
+
+else:
+
+    st.warning(f"Terdapat {len(libur_list)} hari libur nasional bulan ini")
+
+    st.dataframe(libur_list, use_container_width=True)
 
 # ================== DISTRIBUSI SHIFT ==================
 st.markdown("### 📊 Distribusi Shift")
