@@ -74,8 +74,8 @@ padding-bottom:40px;
 }}
 
 .appbar{{
-height:50px;
-font-size:16px;
+height:40px;
+font-size:14px;
 }}
 
 table{{
@@ -93,7 +93,7 @@ white-space:nowrap;
 }}
 </style>
 
-<div class="appbar">📅 Schedule By Amosrcp86</div>
+<div class="appbar">📅 Schedule Powered By Amosrcp86</div>
 
 """, unsafe_allow_html=True)
 
