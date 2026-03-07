@@ -134,7 +134,7 @@ with tab1:
 
         return ""
 
-    st.dataframe(df_baru.style.applymap(highlight), use_container_width=True)
+    st.dataframe(df_baru, use_container_width=True)
 
 # ================== TAB 2 ==================
 
