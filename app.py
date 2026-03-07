@@ -69,42 +69,44 @@ base_cols.columns = ["NO", "NAMA", "TITLE"]
 bulan = st.selectbox("Pilih Bulan", list(range(1,13)), index=datetime.now().month-1)
 tahun = st.number_input("Tahun",2024,2035,datetime.now().year)
 
-jumlah_hari = calendar.monthrange(int(tahun), bulan)[1]
+@st.cache_data
+def generate_schedule(base_cols, bulan, tahun):
 
-# ================== POLA SHIFT ==================
+    jumlah_hari = calendar.monthrange(int(tahun), bulan)[1]
 
-pola = ["OFF","2","2","2","OFF","1","1","1","OFF","3","3","3"]
+    pola = ["OFF","2","2","2","OFF","1","1","1","OFF","3","3","3"]
 
-tanggal_awal_global = datetime(2026,3,1)
-hari_libur = holidays.Indonesia(years=tahun)
+    tanggal_awal_global = datetime(2026,3,1)
 
-data_baru = []
+    hari_libur = holidays.Indonesia(years=tahun)
 
-for _, row in base_cols.iterrows():
+    data_baru=[]
 
-    baris = {
-        "NO": row["NO"],
-        "NAMA": row["NAMA"],
-        "TITLE": row["TITLE"]
-    }
+    for _, row in base_cols.iterrows():
 
-    for i in range(jumlah_hari):
+        baris={
+            "NO":row["NO"],
+            "NAMA":row["NAMA"],
+            "TITLE":row["TITLE"]
+        }
 
-        tanggal = datetime(tahun,bulan,i+1)
-        selisih = (tanggal - tanggal_awal_global).days
-        posisi = selisih % len(pola)
+        for i in range(jumlah_hari):
 
-        shift = pola[posisi]
+            tanggal=datetime(tahun,bulan,i+1)
 
-        if tanggal in hari_libur:
-            shift = f"{shift} LIBUR"
+            selisih=(tanggal-tanggal_awal_global).days
+            posisi=selisih%len(pola)
 
-        baris[str(i+1)] = shift
+            shift=pola[posisi]
 
-    data_baru.append(baris)
+            if tanggal in hari_libur:
+                shift=f"{shift} LIBUR"
 
-df_baru = pd.DataFrame(data_baru)
+            baris[str(i+1)]=shift
 
+        data_baru.append(baris)
+
+    return pd.DataFrame(data_baru)
 # ================== TAB ==================
 
 tab1,tab2,tab3 = st.tabs([
