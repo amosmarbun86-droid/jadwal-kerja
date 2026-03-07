@@ -107,6 +107,7 @@ def generate_schedule(base_cols, bulan, tahun):
         data_baru.append(baris)
 
     return pd.DataFrame(data_baru)
+    df_baru = generate_schedule(base_cols, bulan, tahun)
 # ================== TAB ==================
 
 tab1,tab2,tab3 = st.tabs([
