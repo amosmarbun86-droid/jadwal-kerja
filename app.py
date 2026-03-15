@@ -349,6 +349,7 @@ with tab4:
 
         folder = "absensi_foto"
 
+        # pastikan folder ada
         if not os.path.exists(folder):
             os.makedirs(folder)
 
@@ -356,26 +357,32 @@ with tab4:
 
         path_file = os.path.join(folder, nama_file)
 
+        # simpan foto
         with open(path_file, "wb") as f:
             f.write(foto.getbuffer())
 
-        df = pd.read_csv("absensi.csv")
+        # simpan log absensi
+        if os.path.exists("absensi.csv"):
+            df_absen = pd.read_csv("absensi.csv")
+        else:
+            df_absen = pd.DataFrame(columns=["nama","waktu","status"])
 
-        df.loc[len(df)] = [
+        df_absen.loc[len(df_absen)] = [
             nama_karyawan,
             datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "Hadir"
         ]
 
-        df.to_csv("absensi.csv", index=False)
+        df_absen.to_csv("absensi.csv", index=False)
 
-        st.success("Absensi berhasil")
+        st.success("✅ Absensi berhasil")
 
         st.image(path_file, caption=nama_file)
 
-    st.divider()
+    # ================== GALERI FOTO ==================
 
-    st.subheader("📂 Foto Absensi Hari Ini")
+    st.divider()
+    st.subheader("📂 Foto Absensi")
 
     folder = "absensi_foto"
 
@@ -383,18 +390,26 @@ with tab4:
 
         files = os.listdir(folder)
 
-        if len(files) == 0:
+        # filter hanya gambar
+        images = [
+            f for f in files
+            if f.lower().endswith((".jpg",".jpeg",".png"))
+        ]
+
+        if len(images) == 0:
 
             st.info("Belum ada foto absensi")
 
         else:
 
-            for file in sorted(files, reverse=True):
+            images.sort(reverse=True)
 
-    if file.lower().endswith((".jpg",".jpeg",".png")):
+            cols = st.columns(3)
 
-        path = os.path.join(folder, file)
+            for i, img in enumerate(images):
 
-        if os.path.isfile(path):
+                path = os.path.join(folder, img)
 
-            st.image(path, caption=file, width=200)
+                with cols[i % 3]:
+
+                    st.image(path, caption=img, use_container_width=True)
