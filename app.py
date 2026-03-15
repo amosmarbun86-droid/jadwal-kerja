@@ -372,24 +372,25 @@ with tab4:
         st.success("Absensi berhasil")
 
         st.image(path_file, caption=nama_file)
-st.divider()
 
-st.subheader("📂 Foto Absensi Hari Ini")
+    st.divider()
 
-folder = "absensi_foto"
+    st.subheader("📂 Foto Absensi Hari Ini")
 
-if os.path.exists(folder):
+    folder = "absensi_foto"
 
-    files = os.listdir(folder)
+    if os.path.exists(folder):
 
-    if len(files) == 0:
-        st.info("Belum ada foto absensi")
+        files = os.listdir(folder)
 
-    else:
+        if len(files) == 0:
 
-        for file in sorted(files, reverse=True):
+            st.info("Belum ada foto absensi")
 
-            path = os.path.join(folder, file)
+        else:
 
-            st.image(path, caption=file, width=200)
-        
+            for file in sorted(files, reverse=True):
+
+                path = os.path.join(folder, file)
+
+                st.image(path, caption=file, width=200)
