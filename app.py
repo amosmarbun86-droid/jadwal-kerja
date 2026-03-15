@@ -110,10 +110,11 @@ df_baru = pd.DataFrame(data_baru)
 
 # ================== TAB ==================
 
-tab1, tab2, tab3 = st.tabs([
+tab1, tab2, tab3, tab4 = st.tabs([
 "📅 Jadwal Shift",
 "📊 Dashboard",
-"⚙️ Admin Panel"
+"⚙️ Admin Panel",
+"📷 Vermuk"
 ])
 
 # ================== TAB 1 ==================
@@ -327,3 +328,27 @@ with tab3:
         base_cols.to_csv(FILE_TETAP,index=False)
 
         st.success("Karyawan dihapus")
+
+        # ================== VERMUK ==================
+
+with tab4:
+
+    st.subheader("📷 Vermuk Absensi")
+
+    foto = st.camera_input("Ambil Foto")
+
+    if foto is not None:
+
+        from datetime import datetime
+        import pandas as pd
+
+        waktu = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        df = pd.read_csv("absensi.csv")
+
+        df.loc[len(df)] = ["Unknown", waktu, "Hadir"]
+
+        df.to_csv("absensi.csv", index=False)
+
+        st.success("Absensi berhasil")
+        st.write("Waktu:", waktu)
