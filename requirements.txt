@@ -2,10 +2,8 @@ streamlit
 pandas
 matplotlib
 holidays
-streamlit-calendar
-openpyxl
 fpdf
-opencv-python
-face-recognition
+streamlit-calendar
+opencv-python-headless
 numpy
 bcrypt
