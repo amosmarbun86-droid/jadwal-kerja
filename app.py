@@ -391,6 +391,10 @@ with tab4:
 
             for file in sorted(files, reverse=True):
 
-                path = os.path.join(folder, file)
+    if file.lower().endswith((".jpg",".jpeg",".png")):
 
-                st.image(path, caption=file, width=200)
+        path = os.path.join(folder, file)
+
+        if os.path.isfile(path):
+
+            st.image(path, caption=file, width=200)
