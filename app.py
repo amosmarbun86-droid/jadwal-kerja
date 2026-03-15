@@ -3,6 +3,7 @@ import pandas as pd
 import calendar
 import matplotlib.pyplot as plt
 import holidays
+import os
 from datetime import datetime
 from io import BytesIO
 from fpdf import FPDF
@@ -335,20 +336,39 @@ with tab4:
 
     st.subheader("📷 Vermuk Absensi")
 
+    nama_karyawan = st.selectbox(
+        "Pilih Nama",
+        base_cols["NAMA"]
+    )
+
     foto = st.camera_input("Ambil Foto")
 
     if foto is not None:
 
-        from datetime import datetime
-        import pandas as pd
+        waktu = datetime.now().strftime("%Y%m%d_%H%M%S")
 
-        waktu = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        folder = "absensi_foto"
+
+        if not os.path.exists(folder):
+            os.makedirs(folder)
+
+        nama_file = f"{nama_karyawan}_{waktu}.jpg"
+
+        path_file = os.path.join(folder, nama_file)
+
+        with open(path_file, "wb") as f:
+            f.write(foto.getbuffer())
 
         df = pd.read_csv("absensi.csv")
 
-        df.loc[len(df)] = ["Unknown", waktu, "Hadir"]
+        df.loc[len(df)] = [
+            nama_karyawan,
+            datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "Hadir"
+        ]
 
         df.to_csv("absensi.csv", index=False)
 
         st.success("Absensi berhasil")
-        st.write("Waktu:", waktu)
+
+        st.image(path_file, caption=nama_file)
