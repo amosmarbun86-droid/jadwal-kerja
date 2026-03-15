@@ -5,3 +5,7 @@ holidays
 streamlit-calendar
 openpyxl
 fpdf
+opencv-python
+face-recognition
+numpy
+bcrypt
