@@ -7,3 +7,4 @@ streamlit-calendar
 opencv-python-headless
 numpy
 bcrypt
+openpyxl
