@@ -7,7 +7,8 @@ import os
 from datetime import datetime
 from io import BytesIO
 from fpdf import FPDF
-from streamlit_calendar import calendar as st_calendar
+from streamlit_calendar import calendar 
+as st_calendar
 
 st.set_page_config(page_title="Jadwal Shift Team A", page_icon="📅", layout="wide")
 
