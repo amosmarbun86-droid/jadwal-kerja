@@ -137,10 +137,9 @@ with tab1:
         return ""
 
     st.dataframe(
-        df_baru.style.applymap(highlight),
-        use_container_width=True
-    )
-
+    df_baru.style.apply(lambda col: col.map(highlight)),
+    use_container_width=True
+)
 # ================== TAB 2 ==================
 
 with tab2:
